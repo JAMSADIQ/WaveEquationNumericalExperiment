@@ -1,2 +1,2 @@
-# Numerical-Relativity
-This repository is for codes on using numerical relativity results to get scalars constructed from time like geodesic evulations of a BBH spacetime. 
+# Experiment on implicit scheme for wave equation
+This repository is for code development for an implicit scheme for solving wave equation. 
