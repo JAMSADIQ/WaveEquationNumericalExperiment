@@ -68,6 +68,7 @@ plt.ylabel('u')
 plt.show()    
 #plot c, t, u it will be threeD plot
 
+
 #Impicit Scheme:
 def TDMAsolver(a, b, c, d):
     '''
@@ -104,7 +105,6 @@ u[Nx] = 0
 plt.figure()
 plt.plot(x, u, 'r--', lw=2)
 n=1
-
 a = np.ones(Nx)*(-0.5*coeff**2)
 b = np.ones(Nx+1)*(1.0 +coeff**2)
 c = np.ones(Nx)*(-0.5*coeff**2)
@@ -124,6 +124,9 @@ for n in range(1, Nt):
     #for each xi grid values
     d = np.zeros(Nx+1)
     u = np.zeros(Nx+1)
+    a = np.ones(Nx)*(-coeff**2)
+    b = np.ones(Nx+1)*(1.0 + 2* coeff**2)
+    c = np.ones(Nx)*(-coeff**2)
     for i in range(1,Nx, 1):
         d[i] = 2*u_n[i] - u_nm1[i]
         u = TDMAsolver(a, b, c, d)
