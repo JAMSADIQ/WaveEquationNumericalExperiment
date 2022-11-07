@@ -4,6 +4,7 @@
 #include <math.h> //use for M_PI
 using namespace std;
 
+
 /*following book by Titus Beu */
 double *Vector(int imin, int imax)
 {
@@ -16,27 +17,82 @@ double *Vector(int imin, int imax)
    return p - imin; //adjust for offset
 }
 
-void Explicitpropagte(double u0[], double u1[], double u[], int nx, double c, double dx, double dt)
-//---------------------------------------------------------------------------
-// Propagates the solutions u0[] and u1[] of the wave equation
-//    u_tt = c^2 u_xx,  c=1.0 
-// over the time interval dt, using the explicit difference scheme on a
-// spatial grid with nx nodes and spacing dx. Returns the solution in u[].
-//---------------------------------------------------------------------------
-{
-   double coeff, sqcoeff, coeff2;
-   int i;
 
-   coeff = c*dt/dx; 
-   sqcoeff = coeff*coeff;
-   coeff2 = 2e0*(1e0 - sqcoeff);
-   /*I am following book so they use index 1 to N+1 not from 0 */
-   u[1] = u0[1]; u[nx] = u0[nx];   // Dirichlet boundary conditions
-   for (i=2; i<=nx-1; i++)         // propagate solution at interior points
-      u[i] = sqcoeff*u1[i-1] + coeff2*u1[i] + sqcoeff*u1[i+1] - u0[i];
+void TDMA(double a[], double b[], double c[], double d[], int n) 
+//Solves a system with tridiagonal matrix by LU factorization (diag(L) = 1).
+//a - lower codiagonal (i=2,n)
+//b - main diagonal (i=1,n)
+//c - upper codiagonal (i=1,n-1)
+// d - constant terms (i=1,n); solution on exit
+//n - order of system.
+{
+    int i;
+    if (b[1] == 0e0) 
+        { printf("TriDiagSys: singular matrix !\n"); return; }
+    for (i=2; i<=n; i++) 
+       {                                    // factorization
+        a[i] /= b[i-1];
+        b[i] -= a[i]*c[i-1];
+        if (b[i] == 0e0) 
+	    { printf("TriDiagSys: singular matrix !\n"); return; }
+        d[i] -= a[i]*d[i-1];
+       }
+    d[n] /= b[n];                                     // backward substitution
+    for (i=(n-1); i>=1; i--) 
+        d[i] = (d[i] - c[i]*d[i+1])/b[i];
 }
 
-void Init(double u0[], double u1[], double x[], int nx, double c, double dx, double dt)
+
+void ImplicitInit(double u0[], double u1[], double a[], double b[], double c[], double d[], double x[], int nx, double c, double dx, double dt)
+//---------------------------------------------------------------------------
+//Not working at the moment
+{
+   double coeff, coeff2, sqcoeff, v0;
+   coeff = c*dt/dx; sqcoeff = coeff*coeff;               
+   coeff2 = 1e0 + sqcoeff;
+   int i;
+   for (i=1; i<=nx; i++){          // time step 0
+      v0 = 0e0;
+      u0[i] = sin(4*M_PI*x[i]/1.0);
+      a[i] = -0.5*sqcoeff;
+      c[i] = -0.5*sqcoeff;
+      d[i] = u0[i] + dt * v0;
+       }
+   for (i=1; i<=nx+1; i++){
+       b[i] = coeff2;
+       }
+   TDMA(a, b, c, d, nx)
+   u1[1] = u0[1]; u1[nx] = u0[nx];
+   for (i=1; i<=nx; i++){
+         u1[i] = d[i];}
+}
+
+void Implicitpropagte(double um1[], double u0[], double u1[], double a[], double b[], double c[], double d[], double x[], int nx, double c, double dx, double dt)
+//---------------------------------------------------------------------------
+//Not working at the moment
+{
+   double coeff, coeff2, sqcoeff;
+   coeff = c*dt/dx; sqcoeff = coeff*coeff;                  // time step 1
+   coeff2 = 1e0 + 2* sqcoeff;
+   int i;
+   for (i=1; i<=nx; i++){
+
+      a[i] = -sqcoeff;
+      c[i] = -sqcoeff;
+      d[i] = 2u0[i] - + um1[i];
+       }
+   for (i=1; i<=nx+1; i++){
+       b[i] = coeff2;
+       }
+   TDMA(a, b, c, d, nx)
+   u1[1] = u0[1]; u1[nx] = u0[nx];
+   for (i=1; i<=nx; i++){
+         u1[i] = d[i];}
+
+}
+
+
+void ExplicitInit(double u0[], double u1[], double x[], int nx, double c, double dx, double dt)
 //---------------------------------------------------------------------------
 // Returns initial solutions u0 and u1, for the first two time steps
 //    u0(x,0) = sin(4 pi x) / (L = 1)                 initial solution
@@ -59,6 +115,29 @@ void Init(double u0[], double u1[], double x[], int nx, double c, double dx, dou
       u1[i] = 0.5e0*(sqcoeff*u0[i-1] + coeff2*u0[i] + sqcoeff*u0[i+1]) - dt*v0;
    }
 }
+
+
+void Explicitpropagte(double u0[], double u1[], double u[], int nx, double c, double dx, double dt)
+//---------------------------------------------------------------------------
+// Propagates the solutions u0[] and u1[] of the wave equation
+//    u_tt = c^2 u_xx,  c=1.0 
+// over the time interval dt, using the explicit difference scheme on a
+// spatial grid with nx nodes and spacing dx. Returns the solution in u[].
+//---------------------------------------------------------------------------
+{
+   double coeff, sqcoeff, coeff2;
+   int i;
+
+   coeff = c*dt/dx; 
+   sqcoeff = coeff*coeff;
+   coeff2 = 2e0*(1e0 - sqcoeff);
+   /*I am following book so they use index 1 to N+1 not from 0 */
+   u[1] = u0[1]; u[nx] = u0[nx];   // Dirichlet boundary conditions
+   for (i=2; i<=nx-1; i++)         // propagate solution at interior points
+      u[i] = sqcoeff*u1[i-1] + coeff2*u1[i] + sqcoeff*u1[i+1] - u0[i];
+}
+
+
 /*Explicit scheme and saving data*/
 int main()
 {
@@ -86,7 +165,7 @@ int main()
 
    for (i=1; i<=nx; i++) x[i] = (i-nx2-1)*dx;                 // spatial mesh
 
-   Init(u0, u1, x, nx, c, dx, dt);
+   ExplicitInit(u0, u1, x, nx, c, dx, dt);
    for (it=1; it<=nt; it++) {                                    // time loop
       t = it*dt;
       Explicitpropagte(u0,u1,u,nx,c,dx,dt);                   // propagate solution
@@ -105,32 +184,6 @@ int main()
    }
 }
 
-
-/*Implicit Scheme work in progress*/
-void TDMA(double a[], double b[], double c[], double d[], int n)
-{/*  
-Solves a system with tridiagonal matrix by LU factorization (diag(L) = 1).
-a - lower codiagonal (i=2,n)
-b - main diagonal (i=1,n)
-c - upper codiagonal (i=1,n-1)
- d - constant terms (i=1,n); solution on exit
-n - order of system.
-*/
-    int i;
-    if (b[1] == 0e0) 
-        { printf("TriDiagSys: singular matrix !\n"); return; }
-    for (i=2; i<=n; i++) 
-       {                                    // factorization
-        a[i] /= b[i-1];
-        b[i] -= a[i]*c[i-1];
-        if (b[i] == 0e0) 
-	    { printf("TriDiagSys: singular matrix !\n"); return; }
-        d[i] -= a[i]*d[i-1];
-       }
-    d[n] /= b[n];                                     // backward substitution
-    for (i=(n-1); i>=1; i--) 
-        d[i] = (d[i] - c[i]*d[i+1])/b[i];
-}
 
 /*int main()
 {
