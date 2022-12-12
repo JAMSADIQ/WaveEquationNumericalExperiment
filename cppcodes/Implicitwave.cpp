@@ -1,5 +1,3 @@
-/*A simple code for u_tt = c^2 u_xx with u[t=0,x] = sin(4pix/L), u_t[0,x]= 0 and u[t,x=0] = 0 =u[t, x=L]  x: [0,L=1], t: [0, T]  using first Explicit and than Implicit scheme*/
-
 #include <iostream>
 #include <math.h> //use for M_PI
 using namespace std;
