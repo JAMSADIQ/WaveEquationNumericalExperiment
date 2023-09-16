@@ -1,14 +1,17 @@
 #!/usr/bin/env python
+# py.test -s -v wave_explicit_scheme.py  
 """
-1D wave equation with u=0 at the boundary.
+1D wave equation with u=0 at the boundaries.
 Simplest possible implementation.
 The key function is::
   u, x, t, cpu = (I, V, f, c, L, dt, C, T, user_action)
-which solves the wave equation u_tt = c**2*u_xx on (0,L) with u=0
-on x=0,L, for t in (0,T].  Initial conditions: u=I(x), u_t=V(x).
+which solves the wave equation u_tt = c**2*u_xx on (0,L) 
+with u=0 on x=0 and L, for t in (0,T].  
+Initial conditions: u=I(x), u_t=V(x).
 T is the stop time for the simulation.
 dt is the desired time step.
 C is the Courant number (=c*dt/dx), which specifies dx.
+(*I should paramterize C given dt and dx ?*)
 f(x,t) is a function for the source term (can be 0 or None).
 I and V are functions of x.
 user_action is a function of (u, x, t, n) where the calling
@@ -27,14 +30,12 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
     Nt = int(round(T/dt))
     t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
     dx = dt*c/float(C)
-    print("before grid setup dx, dt = ",  dx, dt)
     Nx = int(round(L/dx))
     x = np.linspace(0, L, Nx+1)       # Mesh points in space
     C2 = C**2                         # Help variable in the scheme
     # Make sure dx and dt are compatible with x and t
     dx = x[1] - x[0]
     dt = t[1] - t[0]
-    print("after grid setup dx, dt = ",  dx, dt)
     if f is None or f == 0 :
         f = lambda x, t: 0
     if V is None or V == 0:
@@ -155,11 +156,12 @@ def convergence_rates(
     plt.plot(h, E, 'r-*', label='hvsE')
     plt.plot(np.array(h), np.array(h)**2, 'k:', label='hvsh^2')
     plt.plot(np.array(h), np.array(h), 'b:', label='hvsh')
-    plt.xlabel("h")
-    plt.ylabel("abs error")
+    plt.xlabel("dt", fontsize=15)
+    plt.ylabel("abs error", fontsize=15)
+    plt.title("cobvergence with CFL = {0} and fixed dt".format(C))
     plt.loglog()
     plt.grid()
-    plt.legend()
+    plt.legend(fontsize=15)
     plt.show()
     # Convergence rates for two consecutive experiments
     r = [np.log(E[i]/E[i-1])/np.log(h[i]/h[i-1])
@@ -181,7 +183,7 @@ def test_convrate_sincos():
         L=L,
         dt0=0.1,
         num_meshes=6,
-        C=0.9,
+        C=0.5,
         T=1)
     print( 'rates sin(x)*cos(t) solution:', \
           [round(r_,2) for r_ in r])
