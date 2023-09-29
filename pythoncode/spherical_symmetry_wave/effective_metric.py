@@ -46,7 +46,7 @@ def Principal_matrix(a, alpha, g, Phi, Pi):
 
 
 def twist_tau_t_r(Aval, Alphaval, PHIval, PIval, DrA, DtA, DrPHI, DtPHI, DrPI, DtPI):
-""" 
+    """
     Equation 46 in Laura paper after calculations and using
     Xp = 1/a^2 (PHI^2 -PI^2)
     """
