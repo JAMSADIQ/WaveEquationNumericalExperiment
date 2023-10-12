@@ -43,12 +43,12 @@ void TDMA(double a[], double b[], double c[], double d[], int n)
 }
 
 
-void ImplicitInit(double u0[], double u1[], double a[], double b[], double c[], double d[], double x[], int nx, double c, double dx, double dt)
+void ImplicitInit(double u0[], double u1[], double a[], double b[], double c[], double d[], double x[], int nx, double cc, double dx, double dt)
 //---------------------------------------------------------------------------
 //Not working at the moment
 {
    double coeff, coeff2, sqcoeff, v0;
-   coeff = c*dt/dx; sqcoeff = coeff*coeff;               
+   coeff = cc*dt/dx; sqcoeff = coeff*coeff;               
    coeff2 = 1e0 + sqcoeff;
    int i;
    for (i=1; i<=nx; i++){          // time step 0
@@ -61,30 +61,30 @@ void ImplicitInit(double u0[], double u1[], double a[], double b[], double c[], 
    for (i=1; i<=nx+1; i++){
        b[i] = coeff2;
        }
-   TDMA(a, b, c, d, nx)
+   TDMA(a, b, c, d, nx);
    u1[1] = u0[1]; u1[nx] = u0[nx];
    for (i=1; i<=nx; i++){
          u1[i] = d[i];}
 }
 
-void Implicitpropagte(double um1[], double u0[], double u1[], double a[], double b[], double c[], double d[], double x[], int nx, double c, double dx, double dt)
+void Implicitpropagte(double um1[], double u0[], double u1[], double a[], double b[], double c[], double d[], double x[], int nx, double cc, double dx, double dt)
 //---------------------------------------------------------------------------
 //Not working at the moment
 {
    double coeff, coeff2, sqcoeff;
-   coeff = c*dt/dx; sqcoeff = coeff*coeff;                  // time step 1
+   coeff = cc*dt/dx; sqcoeff = coeff*coeff;                  // time step 1
    coeff2 = 1e0 + 2* sqcoeff;
    int i;
    for (i=1; i<=nx; i++){
 
       a[i] = -sqcoeff;
       c[i] = -sqcoeff;
-      d[i] = 2u0[i] - + um1[i];
+      d[i] = 2.0*u0[i] - um1[i];
        }
    for (i=1; i<=nx+1; i++){
        b[i] = coeff2;
        }
-   TDMA(a, b, c, d, nx)
+   TDMA(a, b, c, d, nx);
    u1[1] = u0[1]; u1[nx] = u0[nx];
    for (i=1; i<=nx; i++){
          u1[i] = d[i];}
@@ -92,7 +92,7 @@ void Implicitpropagte(double um1[], double u0[], double u1[], double a[], double
 }
 
 
-void ExplicitInit(double u0[], double u1[], double x[], int nx, double c, double dx, double dt)
+void ExplicitInit(double u0[], double u1[], double x[], int nx, double cc, double dx, double dt)
 //---------------------------------------------------------------------------
 // Returns initial solutions u0 and u1, for the first two time steps
 //    u0(x,0) = sin(4 pi x) / (L = 1)                 initial solution
@@ -107,7 +107,7 @@ void ExplicitInit(double u0[], double u1[], double x[], int nx, double c, double
    for (i=1; i<=nx; i++)                             // time step 0
       u0[i] = sin(4*M_PI*x[i]/1.0); 
 
-   coeff = c*dt/dx; sqcoeff = coeff*coeff;                  // time step 1
+   coeff = cc*dt/dx; sqcoeff = coeff*coeff;                  // time step 1
    coeff2 = 2e0*(1e0 - coeff);
    u1[1] = u0[1]; u1[nx] = u0[nx];                // constant boundary values
    for (i=2; i<=nx-1; i++) {
@@ -117,7 +117,7 @@ void ExplicitInit(double u0[], double u1[], double x[], int nx, double c, double
 }
 
 
-void Explicitpropagte(double u0[], double u1[], double u[], int nx, double c, double dx, double dt)
+void Explicitpropagte(double u0[], double u1[], double u[], int nx, double cc, double dx, double dt)
 //---------------------------------------------------------------------------
 // Propagates the solutions u0[] and u1[] of the wave equation
 //    u_tt = c^2 u_xx,  c=1.0 
@@ -128,7 +128,7 @@ void Explicitpropagte(double u0[], double u1[], double u[], int nx, double c, do
    double coeff, sqcoeff, coeff2;
    int i;
 
-   coeff = c*dt/dx; 
+   coeff = cc*dt/dx; 
    sqcoeff = coeff*coeff;
    coeff2 = 2e0*(1e0 - sqcoeff);
    /*I am following book so they use index 1 to N+1 not from 0 */
@@ -142,17 +142,17 @@ void Explicitpropagte(double u0[], double u1[], double u[], int nx, double c, do
 int main()
 {
    double *u0, *u1, *u, *x;
-   double c, dt, dx, t, tmax, xmax, cflcoeff;
+   double cc, dt, dx, t, tmax, xmax, cflcoeff;
    int i, it,  nout, nt, nx, nx2;
    char fname[80], title[80];
    FILE *out;
 
-   c    = 1e0;                                        // phase speed of wave
+   cc    = 1e0;                                        // phase speed of wave
    xmax = 1e0;                                                 // maximum x
    tmax = 40e0;                                   // maximum propagation time
    dt   = 2.5e-3;                                        // time step
    cflcoeff = 0.275;		             //CFL which we set
-   dx   = c*dt/cflcoeff;                            // spatial step size
+   dx   = cc*dt/cflcoeff;                            // spatial step size
    nout = 500;
    nx = 2*(int)(xmax/dx + 0.5) + 1;            // odd number of spatial nodes
    nt = (int)(tmax/dt + 0.5);                         // number of time steps
@@ -165,10 +165,10 @@ int main()
 
    for (i=1; i<=nx; i++) x[i] = (i-nx2-1)*dx;                 // spatial mesh
 
-   ExplicitInit(u0, u1, x, nx, c, dx, dt);
+   ExplicitInit(u0, u1, x, nx, cc, dx, dt);
    for (it=1; it<=nt; it++) {                                    // time loop
       t = it*dt;
-      Explicitpropagte(u0,u1,u,nx,c,dx,dt);                   // propagate solution
+      Explicitpropagte(u0,u1,u,nx,cc,dx,dt);                   // propagate solution
                                                            // shift solutions
       for (i=1; i<=nx; i++) { u0[i] = u1[i];  u1[i] = u[i]; }
 
@@ -184,27 +184,3 @@ int main()
    }
 }
 
-
-/*int main()
-{
-   double *a, *b, *c, *d;
-   int i, n;
-
-   n = 4;                                                  // order of system
-   a = Vector(1,n);                                         // lower diagonal
-   b = Vector(1,n);                                          // main diagonal
-   c = Vector(1,n);                                         // upper diagonal
-   d = Vector(1,n);                            // constant terms and solution
-
-   a[1] = 0; b[1] = 1; c[1] = 2; d[1] = 1;
-   a[2] = 2; b[2] = 1; c[2] = 2; d[2] = 2;
-   a[3] = 2; b[3] = 1; c[3] = 2; d[3] = 3;
-   a[4] = 2; b[4] = 1; c[4] = 0; d[4] = 4;  // Solution: -3.0, 2.0, 3.0, -2.0
-
-   TDMA(a,b,c,d,n);                         // solve tridiagonal system
-
-   printf("Solution:\n");
-   for (i=1; i<=n; i++) printf("%10.3f",d[i]);
-   printf("\n");
-}
-*/
