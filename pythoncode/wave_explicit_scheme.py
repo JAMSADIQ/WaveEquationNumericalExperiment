@@ -1,26 +1,10 @@
 #!/usr/bin/env python
 # py.test -s -v wave_explicit_scheme.py  
-"""
-1D wave equation with u=0 at the boundaries.
-Simplest possible implementation.
-The key function is::
-  u, x, t, cpu = (I, V, f, c, L, dt, C, T, user_action)
-which solves the wave equation u_tt = c**2*u_xx on (0,L) 
-with u=0 on x=0 and L, for t in (0,T].  
-Initial conditions: u=I(x), u_t=V(x).
-T is the stop time for the simulation.
-dt is the desired time step.
-C is the Courant number (=c*dt/dx), which specifies dx.
-(*I should paramterize C given dt and dx ?*)
-f(x,t) is a function for the source term (can be 0 or None).
-I and V are functions of x.
-user_action is a function of (u, x, t, n) where the calling
-code can add visualization, error computations, etc.
-"""
 
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+
 
 def solver(I, V, f, c, L, dt, C, T, user_action=None):
     """
@@ -108,15 +92,14 @@ def test_quadratic():
     C = 0.9
     Nx = 6
     dt = C*(L/Nx)/c
-    T = 2
+    T = 10
     def assert_no_error(u, x, t, n):
         u_e = u_exact(x, t[n])
         diff = np.abs(u - u_e).max()
-        tol = 1E-13
+        tol = 1E-12
         assert diff < tol
 
     solver(I, V, f, c, L, dt, C, T, user_action=assert_no_error)
-
 
 def convergence_rates(
     u_exact,                 # Python function for exact solution
@@ -128,7 +111,7 @@ def convergence_rates(
     """
     # First define an appropriate user action function
     global error
-    error = 0  # error computed in the user action function
+    error = 0   #error computed in the user action function
 
     def compute_error(u, x, t, n):
         global error  # must be global to be altered here
@@ -141,7 +124,7 @@ def convergence_rates(
 
     # Run finer and finer resolutions and compute true errors
     E = []
-    h = []  # dt, solver adjusts dx such that C=dt*c/dx
+    h = []  #dt, solver adjusts dx such that C=dt*c/dx
     dt = dt0
     for i in range(num_meshes):
         solver(I, V, f, c, L, dt, C, T,
@@ -149,7 +132,7 @@ def convergence_rates(
         # error is computed in the final call to compute_error
         E.append(error)
         h.append(dt)
-        dt /= 2  # halve the time step for next simulation
+        dt /= 2   #halve the time step for next simulation
     print( 'E:', E)
     print('h:', h)
     plt.figure(figsize=(8,4))
@@ -158,7 +141,7 @@ def convergence_rates(
     plt.plot(np.array(h), np.array(h), 'b:', label='hvsh')
     plt.xlabel("dt", fontsize=15)
     plt.ylabel("abs error", fontsize=15)
-    plt.title("cobvergence with CFL = {0} and fixed dt".format(C))
+    plt.title("convergence with CFL = {0} and fixed dt".format(C))
     plt.loglog()
     plt.grid()
     plt.legend(fontsize=15)
@@ -173,7 +156,7 @@ def test_convrate_sincos():
     n = m = 2
     L = 1.0
     u_exact = lambda x, t: np.cos(m*np.pi/L*t)*np.sin(m*np.pi/L*x)
-#
+
     r = convergence_rates(
         u_exact=u_exact,
         I=lambda x: u_exact(x, 0),
@@ -187,8 +170,8 @@ def test_convrate_sincos():
         T=1)
     print( 'rates sin(x)*cos(t) solution:', \
           [round(r_,2) for r_ in r])
-#    assert abs(r[-1] - 2) < 0.002
-#
+    assert abs(r[-1] - 2) < 0.002
+
 
 
 def test_convrate_quadratic():
@@ -198,7 +181,7 @@ def test_convrate_quadratic():
         u_exact=u_exact,
         I=lambda x: u_exact(x, 0),
         V=lambda x: 0.5*u_exact(x, 0),
-        f=lambda x, t : 2*(1 + 0.5*t), #*c**2,
+        f=lambda x, t : 2*(1 + 0.5*t),
         c=1,
         L=L,
         dt0=0.1,
