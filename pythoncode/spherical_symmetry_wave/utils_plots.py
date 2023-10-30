@@ -1,6 +1,7 @@
 #Plots for wave solutions
 import numpy as np
 import matplotlib.pyplot as plt
+
 #fixed Style
 from matplotlib import rcParams
 rcParams["text.usetex"] = True
@@ -17,10 +18,7 @@ rcParams["grid.color"] = 'grey'
 rcParams["grid.linewidth"] = 1.
 rcParams["grid.linestyle"] = ':'
 rcParams["grid.alpha"] = 0.8
-#from matplotlib.pyplot import cm
-#color = iter(cm.plasma(np.linspace(0, 0.9, 6)))
 
-#Plot of numeric and analytic solution of 1D wave at fix time
 
 def waveplot_fixed_t(xgrid, f_numeric, f_exact, t=0, drf=None, fymin=-1, fymax=1):
     """
