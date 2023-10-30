@@ -291,44 +291,44 @@ quit()
 #%%plt.show()
 #%%quit()
 #for Totaltime in [20]:
-Totaltime  = 5
-dt1 = 0.01 # dt and C are fixed
-#CFL = 1.5
-dxfix = 0.05
-x1, t1, E1 = solver(init, diff_init, source, 1, 60, dt1, dxfix, Totaltime)
-x2, t2, E2 = solver(init, diff_init, source, 1, 60, dt1/2, dxfix, Totaltime)
-
-
-print(len(t1), len(t2))
-print(t1[-1], t2[-1])
-
-quit()
-for i in range(len(x1)):
-    print(t1[i], t2[i])
-quit()
-#x2n = x2[0::2]
-#E2n = E2[0::2]
-
-E1 = np.interp(t2, t1, E1) 
-plt.plot(x2, E1, label='err with dt')
-plt.plot(x2, E2, label='4*err with 1/2dt')
-#%%plt.semilogy()
-plt.title("T = {0}".format(Totaltime))
-plt.xlabel("r", fontsize=15)
-plt.ylabel("|u_exact - u_numeric|", fontsize=15)
-plt.legend()
-plt.ylim(ymax=8)
-
-plt.figure()
-plt.plot(x2, np.abs(np.log2(E2/E1)))
-#%%plt.plot(x2, 4.0*E2, label='1/2dt')
-#%%plt.legend()
-plt.title("T = {0}".format(Totaltime))
-plt.xlabel("r", fontsize=15)
-plt.ylabel(r"$log2[E_{0.5h} / E_{h}]", fontsize=15)
-plt.ylim(0, 1e2)
-plt.show()
-quit()
+#Totaltime  = 5
+#dt1 = 0.01 # dt and C are fixed
+##CFL = 1.5
+#dxfix = 0.05
+#x1, t1, E1 = solver(init, diff_init, source, 1, 60, dt1, dxfix, Totaltime)
+#x2, t2, E2 = solver(init, diff_init, source, 1, 60, dt1/2, dxfix, Totaltime)
+#
+#
+#print(len(t1), len(t2))
+#print(t1[-1], t2[-1])
+#
+#quit()
+#for i in range(len(x1)):
+#    print(t1[i], t2[i])
+#quit()
+##x2n = x2[0::2]
+##E2n = E2[0::2]
+#
+#E1 = np.interp(t2, t1, E1) 
+#plt.plot(x2, E1, label='err with dt')
+#plt.plot(x2, E2, label='4*err with 1/2dt')
+##%%plt.semilogy()
+#plt.title("T = {0}".format(Totaltime))
+#plt.xlabel("r", fontsize=15)
+#plt.ylabel("|u_exact - u_numeric|", fontsize=15)
+#plt.legend()
+#plt.ylim(ymax=8)
+#
+#plt.figure()
+#plt.plot(x2, np.abs(np.log2(E2/E1)))
+##%%plt.plot(x2, 4.0*E2, label='1/2dt')
+##%%plt.legend()
+#plt.title("T = {0}".format(Totaltime))
+#plt.xlabel("r", fontsize=15)
+#plt.ylabel(r"$log2[E_{0.5h} / E_{h}]", fontsize=15)
+#plt.ylim(0, 1e2)
+#plt.show()
+#quit()
 #x2n = x2.copy()
 #E2n = E2.copy()
 #%%err = np.zeros_like(x1) 
@@ -459,7 +459,7 @@ def test_convrate_quadratic():
     r = convergence_rates(
         u_exact=u_exact,
         I=lambda x: np.exp(-0.5*(x-r0)**2),
-        V=V#lambda x,t: lambda x: Amp/(x**2 * sigma**2)*(x*r0 -x**2 -sigma**2)*np.exp(-0.5*((x- r0)/sigma)**2)
+        V=V #lambda x,t: lambda x: Amp/(x**2 * sigma**2)*(x*r0 -x**2 -sigma**2)*np.exp(-0.5*((x- r0)/sigma)**2)
 ,
         f = lambda x, t : 0.0, 
         c = 1,
@@ -467,13 +467,12 @@ def test_convrate_quadratic():
         dt0 = 0.1,
         num_meshes = 4,
         C = 1.5,
-        T = 10)
+        T = 5)
     print( 'rates spherical wave  solution:', \
           [round(r_,2) for r_ in r])
  
 
 
 if __name__ == '__main__':
-    main()
-    print('see')
+    test_convrate_quadratic()
 
